@@ -1,0 +1,4 @@
+<!-- components/waterfall-item/waterfall-item.wxml -->
+<view class="w-item">
+  <image src="{{itemData.imgUrl}}" style="height:{{itemData.imgHeight}}px" class="w-image"/>
+</view>

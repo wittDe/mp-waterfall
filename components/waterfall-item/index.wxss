@@ -1,0 +1,23 @@
+/* components/waterfall-item/waterfall-item.wxss */
+.w-item {
+  overflow: hidden;
+  line-height: 1;
+  font-size: 0;
+  margin-bottom: 20rpx;
+  animation: zoomIn .3s 0s;
+}
+.w-image {
+  width: 100%;
+  vertical-align: top;
+}
+
+@keyframes zoomIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
