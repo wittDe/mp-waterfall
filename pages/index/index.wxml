@@ -1,4 +1,8 @@
-<!--index.wxml-->
+<!-- index.wxml -->
 <view class="wrap">
-  <mp-waterfall id="waterfall" generic:item="waterfall-item"  list="{{list || []}}" idKey="id" imageKey="imgUrl"  colNum="3" gutter="5%"  bind:loadingChange="onLoadingChange"></mp-waterfall>
+  <mp-waterfall id="waterfall" generic:item="waterfall-item" list="{{list || []}}" idKey="id" imageKey="imgUrl" colNum="2" gutter="5%" bind:loadingChange="onLoadingChange"></mp-waterfall>
+  <view class="load-tips">
+    <view>加载中...</view>
+    <view>加载完毕</view>
+  </view>
 </view>

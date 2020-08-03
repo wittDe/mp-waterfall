@@ -4,20 +4,11 @@
   left: -9999rpx;
   right: -9999rpx;
   opacity: 0;
-  width: 49%;
 }
 .waterfall {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-}
-.waterfall-shadow{
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
 }
 .col {
   width: 1rem;

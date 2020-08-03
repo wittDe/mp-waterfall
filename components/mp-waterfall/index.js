@@ -41,11 +41,12 @@ Component({
     loading: false,
     // 每列数据
     cols: [],
-    // 每列高度
-    colsHeight: [],
     // 列宽度
     colWidth: 0,
+    // 左右列间距
     _gutter: '',
+    // 单次加载个数
+    onceMaxNum: 4,
   },
 
   lifetimes: {
@@ -72,6 +73,7 @@ Component({
         this.setData({
           colWidth: cw
         })
+
       }).exec()
     },
     detached() {
@@ -83,7 +85,8 @@ Component({
       if (!Array.isArray(list) || list.length <= 0) {
         return
       }
-      let { loading, waitList } = this.data
+      // console.log('list update:', list)
+      let { loading, waitList, onceMaxNum } = this.data
       // 已加载的，值发生变化，进行替换
       this.checkUpdate(list)
 
@@ -91,16 +94,20 @@ Component({
       let _list = this.filterRepeat(list)
       if (loading) {
         // 有正在加载的,将未加载的图片加入等待队列
-        this.setData({
-          waitList: [...waitList, ..._list]
-        })
+        this.data.waitList = [...waitList, ..._list]
       } else {
         let len = _list.length
+        if (len > onceMaxNum) {
+          this.data.waitList = _list.slice(onceMaxNum, len)
+          _list = _list.slice(0, onceMaxNum)
+          len = onceMaxNum
+        }
+        this.data.loading = true
+        this.data.thisTimeloadedList = new Array(len).fill(null)
         this.setData({
-          loading: true,
           loadingList: _list,
-          thisTimeloadedList: new Array(len).fill(null)
         })
+        // console.log('loadingList', this.data.loadingList)
       }
     },
     loading(loading) {
@@ -116,14 +123,11 @@ Component({
     initCols() {
       let { colNum } = this.data
       let cols = new Array(colNum)
-      let colsHeight = new Array(colNum)
       for (let i = 0; i < colNum; i++) {
         cols[i] = []
-        colsHeight[i] = 0
       }
       this.setData({
         cols,
-        colsHeight,
       })
     },
     onImageLoad(e) {
@@ -138,71 +142,68 @@ Component({
 
       item.imgHeight = imgHeight
       thisTimeloadedList[index] = item
-      this.setData({
-        thisTimeloadedList
-      })
+      this.data.thisTimeloadedList = thisTimeloadedList
       this.checkThisTimeLoaded()
     },
     // 图片加载失败
     onImageError(e) {
-      console.log(e)
-      let { thisTimeloadedList } = this.data
+      // console.log(e)
+      let { thisTimeloadedList, loadingList } = this.data
       let index = e.currentTarget.dataset.index
-      let { loadingList } = this.data
       let item = loadingList[index]
       // 高度设为1，不显示图片
-      item.imgHeight = 1
+      item.imgHeight = .01
       thisTimeloadedList[index] = item
-      this.setData({
-        thisTimeloadedList
-      })
+      this.data.thisTimeloadedList = thisTimeloadedList
       this.checkThisTimeLoaded()
     },
     checkThisTimeLoaded() {
-      let { loadingList, thisTimeloadedList, loadedList, waitList } = this.data
+      let { loadingList, thisTimeloadedList, loadedList, onceMaxNum } = this.data
+      // console.log((thisTimeloadedList.findIndex(item => item === null) === -1))
+      // console.log(thisTimeloadedList.length, loadingList.length)
       if ((thisTimeloadedList.findIndex(item => item === null) === -1) && thisTimeloadedList.length === loadingList.length) {
         // 这一波元素加载完毕
         // 插入到页面中
-        this.setWaterfall(
+        this.appendToWaterfall(
           thisTimeloadedList,
-          function () {
-            wx.nextTick(() => {
-              this.setData({
-                loadedList: [...loadedList, ...thisTimeloadedList],
-                loading: false,
-                thisTimeloadedList: [],
-                loadingList: []
-              })
-
-              // 加载等待中的
-              if (waitList.length > 0) {
-                this.setData({
-                  loadingList: waitList,
-                  loading: true
-                })
+          () => {
+            let { waitList } = this.data
+            this.data.loadedList = [...loadedList, ...thisTimeloadedList]
+            // this.data.thisTimeloadedList = []
+            // console.log(waitList.length)
+            if (waitList.length > 0) {
+              let _list = this.simpleClone(waitList)
+              let len = _list.length
+              if (len > onceMaxNum) {
+                this.data.waitList = _list.slice(onceMaxNum, len)
+                _list = _list.slice(0, onceMaxNum)
+                len = onceMaxNum
+              } else {
+                this.data.waitList = []
               }
-            })
-          }.bind(this)
+              this.data.loading = true
+              this.data.thisTimeloadedList = new Array(len).fill(null)
+              this.setData({
+                loadingList: _list,
+              })
+            } else {
+              // console.log('append end')
+              this.data.loading = false
+            }
+          }
         )
       }
     },
-    // 设置瀑布流
-    setWaterfall(list, callback) {
-      console.log(list)
-      let { cols, colsHeight } = this.data
+    // 插入瀑布流
+    appendToWaterfall(list, callback) {
+      // console.log('appendToWaterfall:', list)
       const query = wx.createSelectorQuery().in(this)
       this.colNodes = query.selectAll('.waterfall .col')
-      // list.forEach(item => {
-      //   let minHeightIndex = colsHeight.indexOf(Math.min.apply(Math, colsHeight));
-      //   cols[minHeightIndex].push(item)
-      //   colsHeight[minHeightIndex] += item.imgHeight
-      // })
-      this.setData({ cols, colsHeight })
       this._render(list, 0, callback)
     },
     _render(items, i, callback) {
       let { cols } = this.data
-      if (items.length > i && !this.data.stopMasonry) {
+      if (items.length > i) {
         this.colNodes.boundingClientRect().exec(arr => {
           const item = items[i]
           const rects = arr[0]
@@ -212,7 +213,7 @@ Component({
           this.setData({
             cols
           }, () => {
-              this._render(items, ++i, callback)
+            this._render(items, ++i, callback)
           })
         })
       } else {
@@ -241,41 +242,27 @@ Component({
             loaded = col[loadedIndex]
             item.imgHeight = loaded.imgHeight
             let isDiff = JSON.stringify(loaded) !== JSON.stringify(item)
-            // console.log('isDiff1:', isDiff)
-            // console.log('item:', item)
             if (isDiff) {
-              // this.col[loadedIndex] = item
               col.splice(loadedIndex, 1, item)
               this.setData({ cols })
             }
             return
           }
         })
-
-        /* loadedIndex = col2.findIndex(i => i[idKey] === item[idKey])
-        if (loadedIndex !== -1) {
-          loaded = col2[loadedIndex]
-          item.imgHeight = loaded.imgHeight
-          let isDiff = JSON.stringify(loaded) !== JSON.stringify(item)
-          // console.log('isDiff2:', isDiff)
-          // console.log('item:', item)
-          if (isDiff) {
-            // this.col2[loadedIndex] = item
-            col2.splice(loadedIndex, 1, item)
-            this.setData({ col2 })
-          }
-        } */
       })
     },
     reset() {
       this.initCols()
+      this.data.waitList = []
+      this.data.thisTimeloadedList = []
+      this.data.loadedList = []
+      this.data.loading = false
       this.setData({
-        waitList: [],
-        loadingList: [],
-        thisTimeloadedList: [],
-        loadedList: [],
-        loading: false,
+        loadingList: []
       })
+    },
+    simpleClone(obj) {
+      return JSON.parse(JSON.stringify(obj))
     }
   }
 })
