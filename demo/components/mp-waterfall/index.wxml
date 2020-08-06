@@ -1,0 +1,9 @@
+<!-- 用于预加载图片 -->
+<view style="display:none;">
+  <image wx:for="{{loadingList}}" wx:key="_" id="{{item[idKey]}}" src="{{item[imageKey]}}" data-index="{{index}}" bindload="onImageLoad" binderror="onImageError"></image>
+</view>
+<view class="waterfall">
+  <view class="col col-{{idx}}" wx:for="{{cols}}"  wx:for-index="idx" wx:for-item="col" wx:key="_" style="margin-right:{{_gutter}};">
+    <item class="item"  wx:for="{{col}}" wx:key="_" itemData="{{item}}"></item>
+  </view>
+</view>

@@ -102,9 +102,9 @@ Component({
           _list = _list.slice(0, onceMaxNum)
           len = onceMaxNum
         }
-        this.data.loading = true
         this.data.thisTimeloadedList = new Array(len).fill(null)
         this.setData({
+          loading: true,
           loadingList: _list,
         })
         // console.log('loadingList', this.data.loadingList)
@@ -181,14 +181,18 @@ Component({
               } else {
                 this.data.waitList = []
               }
-              this.data.loading = true
+              this.setData({
+                loading: true
+              })
               this.data.thisTimeloadedList = new Array(len).fill(null)
               this.setData({
                 loadingList: _list,
               })
             } else {
               // console.log('append end')
-              this.data.loading = false
+              this.setData({
+                loading: false
+              })
             }
           }
         )
@@ -256,8 +260,8 @@ Component({
       this.data.waitList = []
       this.data.thisTimeloadedList = []
       this.data.loadedList = []
-      this.data.loading = false
       this.setData({
+        loading: false,
         loadingList: []
       })
     },

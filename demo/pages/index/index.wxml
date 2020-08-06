@@ -2,7 +2,7 @@
 <view class="wrap">
   <mp-waterfall id="waterfall" generic:item="waterfall-item" list="{{list || []}}" idKey="id" imageKey="imgUrl" colNum="2" gutter="5%" bind:loadingChange="onLoadingChange"></mp-waterfall>
   <view class="load-tips">
-    <view>加载中...</view>
-    <view>加载完毕</view>
+    <view wx:if="{{listDataLoading || waterfallLoading}}">加载中...</view>
+    <view wx:elif="{{loaded}}">加载完毕</view>
   </view>
 </view>
