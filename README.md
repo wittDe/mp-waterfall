@@ -132,7 +132,7 @@ Page({
 
 | 事件               | 说明                                                                                   | 回调参数                  |
 | ------------------ | -------------------------------------------------------------------------------------- | ------------------------- |
-| bind:loadingChange | 瀑布流传入的 list 的加载状态，true:list 未全部加载完毕还在加载中、false：list 加载完毕 | event\.detail: true/false |
+| bind:loadingChange | 传入的 list 是否加载完毕，true:加载中、false：加载完毕 | event\.detail: true/false |
 
 ## 方法 methods
 
