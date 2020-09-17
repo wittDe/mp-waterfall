@@ -132,10 +132,10 @@ Page({
 
 | 事件               | 说明                                                                                   | 回调参数                  |
 | ------------------ | -------------------------------------------------------------------------------------- | ------------------------- |
-| bind:loadingChange | 瀑布流传入的 list 的加载状态，true:list 未全部加载完毕还在加载中、false：list 加载完毕 | event\.detail: true/false |
+| bind:loadingChange | 传入的 list 是否加载完毕，true:加载中、false：加载完毕 | event\.detail: true/false |
 
 ## 方法 methods
 
 | 方法     | 说明                                                                                                     |
 | -------- | -------------------------------------------------------------------------------------------------------- |
-| rest\(\) | 若要重新加载瀑布流，需调用组件的 reset 方法，调用方法：this\.selectComponent\('\#waterfall'\)\.reset\(\) |
+| reset\(\) | 若要重新加载瀑布流，需调用组件的 reset 方法，调用方法：this\.selectComponent\('\#waterfall'\)\.reset\(\) |
