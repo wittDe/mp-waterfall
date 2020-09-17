@@ -169,6 +169,9 @@ Component({
           () => {
             let { waitList } = this.data
             this.data.loadedList = [...loadedList, ...thisTimeloadedList]
+            this.setData({
+              loadingList: [],
+            })
             // this.data.thisTimeloadedList = []
             // console.log(waitList.length)
             if (waitList.length > 0) {
