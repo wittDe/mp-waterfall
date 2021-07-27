@@ -1,11 +1,7 @@
 .wrap{
-  margin: 0 20rpx;
-}
-.load-tips{
-  text-align: center;
-  line-height: 2;
-  font-size: 28rpx;
-  color: #666;
-  line-height: 1.5;
-  padding: 20rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
 }

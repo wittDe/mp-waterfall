@@ -13,7 +13,7 @@
 
 ## Demo
 
-PC 端可直接打开 [Demo 地址](https://developers.weixin.qq.com/s/ljX0somO70jT)
+PC 端可直接打开 [Demo 地址](https://developers.weixin.qq.com/s/oMXEE6ml7wsr)
 
 打开链接将会自动将 demo 代码导入微信开发者工具
 
@@ -120,13 +120,14 @@ Page({
 
 ## 参数 properties
 
-| 参数     | 说明                                    | 是否必填 | 类型             | 默认值  |
+| 参数      | 说明                                    | 是否必填 | 类型             | 默认值  |
 | -------- | --------------------------------------- | -------- | ---------------- | ------- |
 | list     | 瀑布流数据列表                          | 是       | Array            | \[\]    |
 | idKey    | 数据项中唯一标识的 key                  | 是       | String           | 'id'    |
 | imageKey | 数据项中图片的 key                      | 是       | String           | 'image' |
 | colNum   | 瀑布流列数                              | 否       | Number           | 2       |
-| gutter   | 瀑布流列的左右间隔，支持 rpx,px,%等单位 | 否       | Number \| String | '10rpx' |
+| gutter   | 瀑布流列的左右间隔，支持 rpx,px,%等单位  | 否       | Number \| String | '10rpx' |
+| order    | 是否顺序显示                            | 否       |Boolean            | true   |
 
 ## 事件 events
 

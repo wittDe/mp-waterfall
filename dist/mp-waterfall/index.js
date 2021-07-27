@@ -26,7 +26,12 @@ Component({
     imageKey: {
       type: String,
       value: 'image'
-    }
+    },
+    // 是否后端返回顺序显示
+    order: {
+      type: Boolean,
+      value: true
+    },
   },
   data: {
     // 等待加载的
@@ -47,6 +52,8 @@ Component({
     _gutter: '',
     // 单次加载个数
     onceMaxNum: 4,
+    // 正在插入中
+    appending: false,
   },
 
   lifetimes: {
@@ -73,8 +80,8 @@ Component({
         this.setData({
           colWidth: cw
         })
-
       }).exec()
+
     },
     detached() {
     }
@@ -92,19 +99,29 @@ Component({
 
       // 过滤掉 等待加载、加载中、加载完毕的
       let _list = this.filterRepeat(list)
+      let len = _list.length
       if (loading) {
         // 有正在加载的,将未加载的图片加入等待队列
         this.data.waitList = [...waitList, ..._list]
       } else {
-        let len = _list.length
-        if (len > onceMaxNum) {
-          this.data.waitList = _list.slice(onceMaxNum, len)
-          _list = _list.slice(0, onceMaxNum)
-          len = onceMaxNum
+        if (this.data.order) {
+          // 按顺序显示
+          if (len > onceMaxNum) {
+            this.data.waitList = _list.slice(onceMaxNum, len)
+            _list = _list.slice(0, onceMaxNum)
+            len = onceMaxNum
+          }
         }
+
         this.data.thisTimeloadedList = new Array(len).fill(null)
+
+        if (len > 0) {
+          this.setData({
+            loading: true,
+          })
+        }
+
         this.setData({
-          loading: true,
           loadingList: _list,
         })
         // console.log('loadingList', this.data.loadingList)
@@ -132,7 +149,7 @@ Component({
     },
     onImageLoad(e) {
       // console.log(e)
-      let { colWidth, loadingList, thisTimeloadedList } = this.data
+      let { colWidth, loadingList, thisTimeloadedList, order } = this.data
       let index = e.currentTarget.dataset.index
       let item = loadingList[index]
       let oImgW = e.detail.width // 图片原始宽度
@@ -141,40 +158,51 @@ Component({
       let imgHeight = oImgH * scale // 自适应高度
 
       item.imgHeight = imgHeight
+
       thisTimeloadedList[index] = item
       this.data.thisTimeloadedList = thisTimeloadedList
-      this.checkThisTimeLoaded()
+
+      if (order) {
+        // 按顺序显示
+        this.appendInOrder()
+      } else {
+        // 不按顺序显示
+        this.appendOutOfOrder(item)
+      }
     },
     // 图片加载失败
     onImageError(e) {
       // console.log(e)
-      let { thisTimeloadedList, loadingList } = this.data
+      let { thisTimeloadedList, loadingList, order } = this.data
       let index = e.currentTarget.dataset.index
       let item = loadingList[index]
       // 高度设为1，不显示图片
       item.imgHeight = .01
       thisTimeloadedList[index] = item
       this.data.thisTimeloadedList = thisTimeloadedList
-      this.checkThisTimeLoaded()
+      if (order) {
+        this.appendInOrder()
+      } else {
+        this.appendOutOfOrder(item)
+      }
     },
-    checkThisTimeLoaded() {
+    // 按顺序显示时，检查这一波是否加载完毕,加载完插入页面
+    appendInOrder() {
       let { loadingList, thisTimeloadedList, loadedList, onceMaxNum } = this.data
-      // console.log((thisTimeloadedList.findIndex(item => item === null) === -1))
-      // console.log(thisTimeloadedList.length, loadingList.length)
       if ((thisTimeloadedList.findIndex(item => item === null) === -1) && thisTimeloadedList.length === loadingList.length) {
         // 这一波元素加载完毕
         // 插入到页面中
-        this.appendToWaterfall(
+        this._render(
           thisTimeloadedList,
+          0,
           () => {
             let { waitList } = this.data
             this.data.loadedList = [...loadedList, ...thisTimeloadedList]
-            this.setData({
-              loadingList: [],
-            })
             // this.data.thisTimeloadedList = []
-            // console.log(waitList.length)
             if (waitList.length > 0) {
+              this.setData({
+                loading: true,
+              })
               let _list = this.simpleClone(waitList)
               let len = _list.length
               if (len > onceMaxNum) {
@@ -184,15 +212,12 @@ Component({
               } else {
                 this.data.waitList = []
               }
-              this.setData({
-                loading: true
-              })
               this.data.thisTimeloadedList = new Array(len).fill(null)
               this.setData({
                 loadingList: _list,
               })
             } else {
-              // console.log('append end')
+              console.log('append end')
               this.setData({
                 loading: false
               })
@@ -201,16 +226,51 @@ Component({
         )
       }
     },
-    // 插入瀑布流
-    appendToWaterfall(list, callback) {
-      // console.log('appendToWaterfall:', list)
-      const query = wx.createSelectorQuery().in(this)
-      this.colNodes = query.selectAll('.waterfall .col')
-      this._render(list, 0, callback)
+    // 不按按顺序显示时，插入页面
+    appendOutOfOrder(item) {
+      this.waitAppendList.push(item)
+      if (!this.appending) {
+        let renderList = this.simpleClone(this.waitAppendList)
+        this.data.loadedList = [...this.data.loadedList, ...renderList]
+        this.waitAppendList = []
+        this.setData({
+          loading: true
+        })
+        this._render(renderList, 0, () => {
+          let renderList2 = this.simpleClone(this.waitAppendList)
+          this.data.loadedList = [...this.data.loadedList, ...renderList2]
+          this.waitAppendList = []
+          if (renderList2.length > 0) {
+            this._render(renderList2, 0, () => {
+              this.checkOutOfOrderLoading()
+            })
+          } else {
+            this.checkOutOfOrderLoading()
+          }
+        })
+      }
+    },
+    checkOutOfOrderLoading() {
+      let { loadingList, thisTimeloadedList } = this.data
+      if ((thisTimeloadedList.findIndex(item => item === null) === -1) && thisTimeloadedList.length === loadingList.length) {
+        setTimeout(() => {
+          this.setData({
+            loading: false
+          })
+        }, 100)
+
+      } else {
+        this.setData({
+          loading: true
+        })
+      }
     },
     _render(items, i, callback) {
       let { cols } = this.data
       if (items.length > i) {
+        this.appending = true
+        const query = wx.createSelectorQuery().in(this)
+        this.colNodes = query.selectAll('.waterfall .col')
         this.colNodes.boundingClientRect().exec(arr => {
           const item = items[i]
           const rects = arr[0]
@@ -224,6 +284,7 @@ Component({
           })
         })
       } else {
+        this.appending = false
         typeof (callback) === 'function' && callback()
       }
     },
@@ -263,6 +324,7 @@ Component({
       this.data.waitList = []
       this.data.thisTimeloadedList = []
       this.data.loadedList = []
+      this.waitAppendList = []
       this.setData({
         loading: false,
         loadingList: []
