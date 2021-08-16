@@ -13,7 +13,7 @@
 
 ## Demo
 
-PC 端可直接打开 [Demo 地址](https://developers.weixin.qq.com/s/oMXEE6ml7wsr)
+PC 端可直接打开 [Demo 地址](https://developers.weixin.qq.com/s/uWl4WBmm7msI)
 
 打开链接将会自动将 demo 代码导入微信开发者工具
 
