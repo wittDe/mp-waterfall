@@ -276,9 +276,10 @@ Component({
           const rects = arr[0]
           let colsHeight = rects.map(item => item.height)
           let minHeightIndex = colsHeight.indexOf(Math.min.apply(Math, colsHeight));
-          cols[minHeightIndex].push(item)
+          // cols[minHeightIndex].push(item)
+          let len = cols[minHeightIndex].length
           this.setData({
-            cols
+            [`cols[${minHeightIndex}][${len}]`]: item
           }, () => {
             this._render(items, ++i, callback)
           })
@@ -304,15 +305,17 @@ Component({
       list.forEach(item => {
         let loadedIndex = -1
         let loaded = null
-        cols.forEach(col => {
+        cols.forEach((col, colIndex) => {
           loadedIndex = col.findIndex(i => i[idKey] === item[idKey])
           if (loadedIndex !== -1) {
             loaded = col[loadedIndex]
             item.imgHeight = loaded.imgHeight
             let isDiff = JSON.stringify(loaded) !== JSON.stringify(item)
             if (isDiff) {
-              col.splice(loadedIndex, 1, item)
-              this.setData({ cols })
+              // col.splice(loadedIndex, 1, item)
+              this.setData({
+                [`cols[${colIndex}][${loadedIndex}]`]: item
+              })
             }
             return
           }
