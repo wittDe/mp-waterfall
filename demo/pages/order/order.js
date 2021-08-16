@@ -68,7 +68,8 @@ Page({
       list.push({
         id,
         text: mockText,
-        imgUrl: `https://iph.href.lu/${imgWidth}x${imgHeight}?fg=ffffff&bg=07c160&text=我是图片${id}(${imgWidth}x${imgHeight})`,
+        imgUrl: `https://via.placeholder.com/${imgWidth}x${imgHeight}.jpeg/07c160/fff?text=${id}(${imgWidth}x${imgHeight})`,
+        // imgUrl: `https://iph.href.lu/${imgWidth}x${imgHeight}?fg=ffffff&bg=07c160&text=我是图片${id}(${imgWidth}x${imgHeight})`,
         // imgUrl: `http://placekitten.com/${imgWidth}/${imgHeight}`,
       })
 
